@@ -1,5 +1,7 @@
 # EssentialMapper (Shizuku)
 
+[English](README.md) | [日本語](README.ja.md)
+
 This is a Shizuku-powered fork of [tracpants/essential-mapper](https://github.com/tracpants/essential-mapper).
 
 Remap the Nothing Phone (3a) Lite's hardware **Essential Key** to launch an app or
@@ -14,7 +16,8 @@ slot in the app.
 
 ## Key Changes in this Fork
 
-- **Shizuku-Powered**: Instead of relying solely on the Android Accessibility Service, this fork uses [Shizuku](https://shizuku.rikka.app/) to monitor hardware key events directly and run as a foreground service.
+- **No Accessibility Service (Bypass Payment App Blocks)**: Completely eliminates the dependency on Android's Accessibility Service. Many financial and payment apps (such as PayPay and various Japanese banking apps) block execution or show security warnings when Accessibility Services are enabled. By using [Shizuku](https://shizuku.rikka.app/) and running as a standard Foreground Service, this fork avoids those restrictions entirely.
+- **In-App Single Press Unlock**: Toggle the Nothing stock app suppression directly from the app UI via Shizuku without needing a PC or manual ADB commands.
 - **Independent Package**: Packaged as `com.aiden.essentialmapper.shizuku` so it can be installed alongside the original app.
 
 ## Requirements & Setup
@@ -25,8 +28,11 @@ slot in the app.
 
 ## Freeing the single press
 
-Double- and triple-tap work immediately. The **single** press stays system-owned until you
-disable Nothing's Essential surfaces (reversible with `pm enable`):
+Double- and triple-tap work immediately. The **single** press stays system-owned until Nothing's stock Essential surfaces are disabled.
+
+In this fork, **you can simply toggle this on/off directly inside the app** using the **"Free Single Press"** switch (powered by Shizuku).
+
+Alternatively, you can still disable them manually via ADB:
 
 ```bash
 adb shell pm disable-user --user 0 com.nothing.ntessentialspace
@@ -36,7 +42,9 @@ adb shell pm disable-user --user 0 com.nothing.essentialintelligence
 
 ## How it works
 
-Key events are monitored by matching the Essential Key **scanCode 250** (it reports `keyCode=0`, so the scanCode is its only stable identity). Taps are counted on a 400 ms debounce and dispatched from a DataStore-backed map. Both tunables live in `EssentialKeyService`.
+Instead of hooking Android's `AccessibilityService.onKeyEvent`, this fork uses Shizuku to read kernel input events directly from `/dev/input/event0` via `getevent`.
+
+It filters for the Essential Key's hardware event code `00fa` (hex for **scanCode 250**; reports `keyCode=0`, so scanCode is its only stable identity). Taps are counted on a 400 ms debounce window and dispatched to your configured apps via a DataStore-backed map. Both tunables live in `EssentialKeyService`.
 
 > ⚠️ scanCode 250 is specific to this device/firmware — no promise it matches other Nothing models.
 
