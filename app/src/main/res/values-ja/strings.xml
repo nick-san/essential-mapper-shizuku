@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App & General -->
+    <string name="app_name">EssentialMapper (Shizuku)</string>
+    <string name="app_description">ユーザー補助機能を使わずに、Shizuku経由でEssential Keyのイベントを割り当てます。</string>
+
+    <!-- Service Notification -->
+    <string name="service_notification_title">EssentialMapper (Shizuku) サービス</string>
+    <string name="service_notification_running">Shizuku経由でEssential Keyを監視中</string>
+
+    <!-- Shizuku & Service Status -->
+    <string name="shizuku_status_not_running">Shizuku: 未起動</string>
+    <string name="shizuku_status_permission_needed">Shizuku: 接続済み (権限が必要です)</string>
+    <string name="shizuku_status_authorized">Shizuku: 接続・認証済み</string>
+    <string name="service_status_running">サービス: 実行中</string>
+    <string name="service_status_stopped">サービス: 停止中</string>
+    <string name="btn_grant_shizuku">Shizukuの権限を許可</string>
+    <string name="btn_start_service">サービスを開始</string>
+    <string name="btn_stop_service">サービスを停止</string>
+
+    <!-- Single Press Unlock -->
+    <string name="unlock_single_press_title">単押し解放 (Nothing純正無効化)</string>
+    <string name="unlock_single_press_desc_unlocked">Nothing純正アプリが無効化されています (単押しを完全に利用可能)</string>
+    <string name="unlock_single_press_desc_locked">Nothing純正アプリが有効です (単押しでEssential Spaceが起動)</string>
+
+    <!-- Key Mapping Section -->
+    <string name="key_mapping_title">キー割り当て</string>
+    <string name="loading_apps">アプリを読み込み中…</string>
+
+    <!-- Tap Slots -->
+    <string name="tap_slot_single">1回押し (シングルタップ)</string>
+    <string name="tap_slot_double">2回押し (ダブルタップ)</string>
+    <string name="tap_slot_triple">3回押し (トリプルタップ)</string>
+
+    <!-- Actions -->
+    <string name="action_none">なし</string>
+    <string name="action_flashlight">ライト (ON/OFF切替)</string>
+</resources>

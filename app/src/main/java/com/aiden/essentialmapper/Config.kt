@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 
 /** The three tap slots the Essential Key can be mapped to. */
-enum class TapSlot(val key: String, val label: String) {
-    SINGLE("single", "Single tap"),
-    DOUBLE("double", "Double tap"),
-    TRIPLE("triple", "Triple tap"),
+enum class TapSlot(val key: String, val label: String, val labelResId: Int) {
+    SINGLE("single", "Single tap", R.string.tap_slot_single),
+    DOUBLE("double", "Double tap", R.string.tap_slot_double),
+    TRIPLE("triple", "Triple tap", R.string.tap_slot_triple),
 }
 
 /** Persisted mapping. A null slot means "do nothing". */

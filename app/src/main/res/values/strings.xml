@@ -1,6 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App & General -->
     <string name="app_name">EssentialMapper (Shizuku)</string>
+    <string name="app_description">Map Essential Key events via Shizuku without AccessibilityService.</string>
+
+    <!-- Service Notification -->
     <string name="service_notification_title">EssentialMapper (Shizuku) Service</string>
     <string name="service_notification_running">Monitoring Essential Key via Shizuku</string>
+
+    <!-- Shizuku & Service Status -->
+    <string name="shizuku_status_not_running">Shizuku: Not running</string>
+    <string name="shizuku_status_permission_needed">Shizuku: Connected (Permission needed)</string>
+    <string name="shizuku_status_authorized">Shizuku: Connected &amp; Authorized</string>
+    <string name="service_status_running">Service: Running</string>
+    <string name="service_status_stopped">Service: Stopped</string>
+    <string name="btn_grant_shizuku">Grant Shizuku Permission</string>
+    <string name="btn_start_service">Start Service</string>
+    <string name="btn_stop_service">Stop Service</string>
+
+    <!-- Single Press Unlock -->
+    <string name="unlock_single_press_title">Free Single Press (Disable stock apps)</string>
+    <string name="unlock_single_press_desc_unlocked">Stock Essential apps are disabled (Single tap fully available)</string>
+    <string name="unlock_single_press_desc_locked">Stock Essential apps are enabled (Single tap launches Essential Space)</string>
+
+    <!-- Key Mapping Section -->
+    <string name="key_mapping_title">Key Mapping</string>
+    <string name="loading_apps">Loading apps…</string>
+
+    <!-- Tap Slots -->
+    <string name="tap_slot_single">Single tap</string>
+    <string name="tap_slot_double">Double tap</string>
+    <string name="tap_slot_triple">Triple tap</string>
+
+    <!-- Actions -->
+    <string name="action_none">None</string>
+    <string name="action_flashlight">Flashlight (toggle)</string>
 </resources>

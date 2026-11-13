@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -216,9 +217,9 @@ private fun ConfigScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("EssentialMapper (Shizuku)", style = MaterialTheme.typography.headlineSmall)
+            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall)
             Text(
-                "Map Essential Key events via Shizuku without AccessibilityService.",
+                stringResource(R.string.app_description),
                 style = MaterialTheme.typography.bodyMedium,
             )
 
@@ -260,7 +261,7 @@ private fun ConfigScreen(
 
             HorizontalDivider()
 
-            Text("Key Mapping", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.key_mapping_title), style = MaterialTheme.typography.titleMedium)
 
             TapSlot.entries.forEach { slot ->
                 val value = keyMap.forSlot(slot)
@@ -277,7 +278,7 @@ private fun ConfigScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(8.dp))
-                    Text("Loading apps…")
+                    Text(stringResource(R.string.loading_apps))
                 }
             }
         }
@@ -287,7 +288,7 @@ private fun ConfigScreen(
     val loaded = apps
     if (slot != null && loaded != null) {
         AppPickerDialog(
-            title = slot.label,
+            title = stringResource(slot.labelResId),
             apps = loaded,
             current = keyMap.forSlot(slot),
             onPick = { pkg ->
@@ -313,19 +314,20 @@ private fun StatusCard(
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val shizukuText = when {
-                !shizukuStatus.isAlive -> "Shizuku: Not running"
-                !shizukuStatus.isGranted -> "Shizuku: Connected (Permission needed)"
-                else -> "Shizuku: Connected & Authorized"
+                !shizukuStatus.isAlive -> stringResource(R.string.shizuku_status_not_running)
+                !shizukuStatus.isGranted -> stringResource(R.string.shizuku_status_permission_needed)
+                else -> stringResource(R.string.shizuku_status_authorized)
             }
             Text(shizukuText, style = MaterialTheme.typography.bodyMedium)
 
-            val serviceText = if (isServiceRunning) "Service: Running" else "Service: Stopped"
+            val serviceText = if (isServiceRunning) stringResource(R.string.service_status_running)
+            else stringResource(R.string.service_status_stopped)
             Text(serviceText, style = MaterialTheme.typography.bodyMedium)
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (shizukuStatus.isAlive && !shizukuStatus.isGranted) {
                     Button(onClick = onRequestPermission) {
-                        Text("Grant Shizuku Permission")
+                        Text(stringResource(R.string.btn_grant_shizuku))
                     }
                 }
 
@@ -335,7 +337,7 @@ private fun StatusCard(
                         colors = if (isServiceRunning) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                         else ButtonDefaults.buttonColors()
                     ) {
-                        Text(if (isServiceRunning) "Stop Service" else "Start Service")
+                        Text(if (isServiceRunning) stringResource(R.string.btn_stop_service) else stringResource(R.string.btn_start_service))
                     }
                 }
             }
@@ -362,10 +364,10 @@ private fun SinglePressUnlockCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("単押し解放 (Nothing純正無効化)", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.unlock_single_press_title), style = MaterialTheme.typography.titleMedium)
                 Text(
-                    if (isUnlocked) "Nothing純正アプリが無効化されています (単押しを完全に利用可能)"
-                    else "Nothing純正アプリが有効です (単押しでEssential Spaceが起動)",
+                    if (isUnlocked) stringResource(R.string.unlock_single_press_desc_unlocked)
+                    else stringResource(R.string.unlock_single_press_desc_locked),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -384,9 +386,10 @@ private fun SinglePressUnlockCard(
     }
 }
 
+@Composable
 private fun slotDisplay(value: String?, apps: List<AppInfo>?): String = when {
-    value == null -> "None"
-    value == Config.ACTION_FLASHLIGHT -> "Flashlight (toggle)"
+    value == null -> stringResource(R.string.action_none)
+    value == Config.ACTION_FLASHLIGHT -> stringResource(R.string.action_flashlight)
     else -> apps?.find { it.pkg == value }?.label ?: value
 }
 
@@ -411,7 +414,7 @@ private fun SlotRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text(slot.label, style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(slot.labelResId), style = MaterialTheme.typography.labelMedium)
                 Text(valueLabel, style = MaterialTheme.typography.bodyLarge)
             }
             if (icon != null) {
@@ -452,11 +455,11 @@ private fun AppPickerDialog(
                 )
                 LazyColumn(Modifier.weight(1f)) {
                     item {
-                        PickRow("None", null, selected = current == null) { onPick(null) }
+                        PickRow(stringResource(R.string.action_none), null, selected = current == null) { onPick(null) }
                     }
                     item {
                         PickRow(
-                            "Flashlight (toggle)",
+                            stringResource(R.string.action_flashlight),
                             null,
                             selected = current == Config.ACTION_FLASHLIGHT,
                         ) { onPick(Config.ACTION_FLASHLIGHT) }

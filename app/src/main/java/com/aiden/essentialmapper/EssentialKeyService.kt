@@ -233,10 +233,10 @@ class EssentialKeyService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "EssentialMapper Service",
+                getString(R.string.service_notification_title),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Monitors Essential Key events"
+                description = getString(R.string.service_notification_running)
             }
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
@@ -252,8 +252,8 @@ class EssentialKeyService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("EssentialMapper")
-            .setContentText("Monitoring Essential Key via Shizuku")
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.service_notification_running))
             .setSmallIcon(android.R.drawable.ic_lock_idle_charging)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
