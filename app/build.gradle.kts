@@ -9,7 +9,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.aiden.essentialmapper"
+        applicationId = "com.aiden.essentialmapper.shizuku"
         minSdk = 31
         targetSdk = 36
         versionCode = 1
@@ -43,5 +43,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
     debugImplementation(libs.androidx.ui.tooling)
 }

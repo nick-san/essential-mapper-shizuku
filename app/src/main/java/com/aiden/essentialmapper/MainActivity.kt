@@ -1,12 +1,17 @@
 package com.aiden.essentialmapper
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,27 +20,32 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -44,10 +54,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import rikka.shizuku.Shizuku
 
 data class AppInfo(val pkg: String, val label: String, val icon: ImageBitmap)
 
@@ -67,32 +79,133 @@ private suspend fun loadLaunchableApps(ctx: Context): List<AppInfo> =
             .sortedBy { it.label.lowercase() }
     }
 
-private fun openAccessibilitySettings(ctx: Context) {
-    ctx.startActivity(
-        Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    )
-}
-
 class MainActivity : ComponentActivity() {
+
+    private val shizukuPermissionListener =
+        Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+            if (requestCode == REQUEST_CODE_SHIZUKU) {
+                val granted = grantResult == PackageManager.PERMISSION_GRANTED
+                Log.i("EMAP", "Shizuku permission result: $granted")
+                updateShizukuState()
+            }
+        }
+
+    private val binderReceivedListener = Shizuku.OnBinderReceivedListener {
+        Log.i("EMAP", "Shizuku binder received")
+        updateShizukuState()
+    }
+
+    private val binderDeadListener = Shizuku.OnBinderDeadListener {
+        Log.i("EMAP", "Shizuku binder dead")
+        updateShizukuState()
+    }
+
+    private var shizukuState by mutableStateOf(ShizukuStatus(isAlive = false, isGranted = false))
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { MaterialTheme { ConfigScreen() } }
+
+        Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
+        Shizuku.addBinderDeadListener(binderDeadListener)
+        Shizuku.addRequestPermissionResultListener(shizukuPermissionListener)
+
+        updateShizukuState()
+
+        setContent {
+            MaterialTheme {
+                ConfigScreen(
+                    shizukuStatus = shizukuState,
+                    onRequestShizukuPermission = { requestShizukuPermission() },
+                )
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateShizukuState()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Shizuku.removeBinderReceivedListener(binderReceivedListener)
+        Shizuku.removeBinderDeadListener(binderDeadListener)
+        Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener)
+    }
+
+    private fun updateShizukuState() {
+        val alive = try {
+            Shizuku.pingBinder()
+        } catch (e: Throwable) {
+            false
+        }
+        val granted = if (alive) {
+            try {
+                if (Shizuku.isPreV11()) {
+                    false
+                } else {
+                    Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+                }
+            } catch (e: Throwable) {
+                false
+            }
+        } else {
+            false
+        }
+        shizukuState = ShizukuStatus(isAlive = alive, isGranted = granted)
+    }
+
+    private fun requestShizukuPermission() {
+        if (!shizukuState.isAlive) return
+        try {
+            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                Shizuku.requestPermission(REQUEST_CODE_SHIZUKU)
+            }
+        } catch (e: Throwable) {
+            Log.e("EMAP", "Failed to request Shizuku permission", e)
+        }
+    }
+
+    companion object {
+        const val REQUEST_CODE_SHIZUKU = 1002
     }
 }
 
+data class ShizukuStatus(val isAlive: Boolean, val isGranted: Boolean)
+
 @Composable
-private fun ConfigScreen() {
+private fun ConfigScreen(
+    shizukuStatus: ShizukuStatus,
+    onRequestShizukuPermission: () -> Unit,
+) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val keyMap by Config.flow(ctx).collectAsState(initial = KeyMap())
-    var apps by remember { mutableStateOf<List<AppInfo>?>(null) } // null while loading
+    val isRunning by EssentialKeyService.isRunning.collectAsState()
+    var apps by remember { mutableStateOf<List<AppInfo>?>(null) }
     var picker by remember { mutableStateOf<TapSlot?>(null) }
+
+    var isSinglePressUnlocked by remember { mutableStateOf(ShizukuUtil.areTargetsDisabled(ctx)) }
+    var isTogglingUnlock by remember { mutableStateOf(false) }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                EssentialKeyService.start(ctx)
+            }
+        }
+    )
 
     LaunchedEffect(Unit) {
         Config.seedDefaultsIfEmpty(ctx)
         apps = loadLaunchableApps(ctx)
+        isSinglePressUnlocked = ShizukuUtil.areTargetsDisabled(ctx)
+    }
+
+    LaunchedEffect(shizukuStatus.isGranted) {
+        isSinglePressUnlocked = ShizukuUtil.areTargetsDisabled(ctx)
     }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { inner ->
@@ -103,15 +216,51 @@ private fun ConfigScreen() {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("EssentialMapper", style = MaterialTheme.typography.headlineSmall)
+            Text("EssentialMapper (Shizuku)", style = MaterialTheme.typography.headlineSmall)
             Text(
-                "Assign an app to each Essential Key tap count.",
+                "Map Essential Key events via Shizuku without AccessibilityService.",
                 style = MaterialTheme.typography.bodyMedium,
             )
-            OutlinedButton(onClick = { openAccessibilitySettings(ctx) }) {
-                Text("Open Accessibility settings")
-            }
+
+            // Shizuku & Service Status Card
+            StatusCard(
+                shizukuStatus = shizukuStatus,
+                isServiceRunning = isRunning,
+                onRequestPermission = onRequestShizukuPermission,
+                onToggleService = {
+                    if (isRunning) {
+                        EssentialKeyService.stop(ctx)
+                    } else {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS)
+                            != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            EssentialKeyService.start(ctx)
+                        }
+                    }
+                }
+            )
+
+            // Single Press Unlock Card (pm disable-user)
+            SinglePressUnlockCard(
+                isShizukuGranted = shizukuStatus.isGranted,
+                isUnlocked = isSinglePressUnlocked,
+                isLoading = isTogglingUnlock,
+                onToggle = { enableUnlock ->
+                    scope.launch {
+                        isTogglingUnlock = true
+                        ShizukuUtil.setTargetsDisabled(ctx, enableUnlock)
+                        isSinglePressUnlocked = ShizukuUtil.areTargetsDisabled(ctx)
+                        isTogglingUnlock = false
+                    }
+                }
+            )
+
             HorizontalDivider()
+
+            Text("Key Mapping", style = MaterialTheme.typography.titleMedium)
 
             TapSlot.entries.forEach { slot ->
                 val value = keyMap.forSlot(slot)
@@ -150,7 +299,91 @@ private fun ConfigScreen() {
     }
 }
 
-/** Resolve a stored slot value to a human label. */
+@Composable
+private fun StatusCard(
+    shizukuStatus: ShizukuStatus,
+    isServiceRunning: Boolean,
+    onRequestPermission: () -> Unit,
+    onToggleService: () -> Unit,
+) {
+    Surface(
+        tonalElevation = 3.dp,
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            val shizukuText = when {
+                !shizukuStatus.isAlive -> "Shizuku: Not running"
+                !shizukuStatus.isGranted -> "Shizuku: Connected (Permission needed)"
+                else -> "Shizuku: Connected & Authorized"
+            }
+            Text(shizukuText, style = MaterialTheme.typography.bodyMedium)
+
+            val serviceText = if (isServiceRunning) "Service: Running" else "Service: Stopped"
+            Text(serviceText, style = MaterialTheme.typography.bodyMedium)
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (shizukuStatus.isAlive && !shizukuStatus.isGranted) {
+                    Button(onClick = onRequestPermission) {
+                        Text("Grant Shizuku Permission")
+                    }
+                }
+
+                if (shizukuStatus.isGranted) {
+                    Button(
+                        onClick = onToggleService,
+                        colors = if (isServiceRunning) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        else ButtonDefaults.buttonColors()
+                    ) {
+                        Text(if (isServiceRunning) "Stop Service" else "Start Service")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SinglePressUnlockCard(
+    isShizukuGranted: Boolean,
+    isUnlocked: Boolean,
+    isLoading: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Surface(
+        tonalElevation = 3.dp,
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("単押し解放 (Nothing純正無効化)", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    if (isUnlocked) "Nothing純正アプリが無効化されています (単押しを完全に利用可能)"
+                    else "Nothing純正アプリが有効です (単押しでEssential Spaceが起動)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            if (isLoading) {
+                CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+            } else {
+                Switch(
+                    checked = isUnlocked,
+                    onCheckedChange = onToggle,
+                    enabled = isShizukuGranted
+                )
+            }
+        }
+    }
+}
+
 private fun slotDisplay(value: String?, apps: List<AppInfo>?): String = when {
     value == null -> "None"
     value == Config.ACTION_FLASHLIGHT -> "Flashlight (toggle)"

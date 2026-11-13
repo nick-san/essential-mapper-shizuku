@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "EssentialMapper"
+rootProject.name = "essential-mapper-shizuku"
 include(":app")
