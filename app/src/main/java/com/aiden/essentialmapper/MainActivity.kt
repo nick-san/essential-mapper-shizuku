@@ -387,9 +387,18 @@ private fun SinglePressUnlockCard(
 }
 
 @Composable
-private fun slotDisplay(value: String?, apps: List<AppInfo>?): String = when {
-    value == null -> stringResource(R.string.action_none)
-    value == Config.ACTION_FLASHLIGHT -> stringResource(R.string.action_flashlight)
+private fun slotDisplay(value: String?, apps: List<AppInfo>?): String = when (value) {
+    null -> stringResource(R.string.action_none)
+    Config.ACTION_FLASHLIGHT -> stringResource(R.string.action_flashlight)
+    Config.ACTION_ALT_TAB -> stringResource(R.string.action_alt_tab)
+    Config.ACTION_RECENTS -> stringResource(R.string.action_recents)
+    Config.ACTION_TOGGLE_NOTIFICATIONS -> stringResource(R.string.action_toggle_notifications)
+    Config.ACTION_NOTIFICATIONS -> stringResource(R.string.action_notifications)
+    Config.ACTION_COLLAPSE_PANEL -> stringResource(R.string.action_collapse_panel)
+    Config.ACTION_TOGGLE_CONTROL_CENTER -> stringResource(R.string.action_toggle_control_center)
+    Config.ACTION_CONTROL_CENTER -> stringResource(R.string.action_control_center)
+    Config.ACTION_COLLAPSE_CONTROL_CENTER -> stringResource(R.string.action_collapse_control_center)
+    Config.ACTION_SCREENSHOT -> stringResource(R.string.action_screenshot)
     else -> apps?.find { it.pkg == value }?.label ?: value
 }
 
@@ -463,6 +472,69 @@ private fun AppPickerDialog(
                             null,
                             selected = current == Config.ACTION_FLASHLIGHT,
                         ) { onPick(Config.ACTION_FLASHLIGHT) }
+                    }
+                    item {
+                        PickRow(
+                            stringResource(R.string.action_alt_tab),
+                            null,
+                            selected = current == Config.ACTION_ALT_TAB,
+                        ) { onPick(Config.ACTION_ALT_TAB) }
+                    }
+                    item {
+                        PickRow(
+                            stringResource(R.string.action_recents),
+                            null,
+                            selected = current == Config.ACTION_RECENTS,
+                        ) { onPick(Config.ACTION_RECENTS) }
+                    }
+                    item {
+                        PickRow(
+                            stringResource(R.string.action_toggle_notifications),
+                            null,
+                            selected = current == Config.ACTION_TOGGLE_NOTIFICATIONS,
+                        ) { onPick(Config.ACTION_TOGGLE_NOTIFICATIONS) }
+                    }
+                    item {
+                        PickRow(
+                            stringResource(R.string.action_notifications),
+                            null,
+                            selected = current == Config.ACTION_NOTIFICATIONS,
+                        ) { onPick(Config.ACTION_NOTIFICATIONS) }
+                    }
+                    item {
+                        PickRow(
+                            stringResource(R.string.action_collapse_panel),
+                            null,
+                            selected = current == Config.ACTION_COLLAPSE_PANEL,
+                        ) { onPick(Config.ACTION_COLLAPSE_PANEL) }
+                    }
+                    item {
+                        PickRow(
+                            stringResource(R.string.action_toggle_control_center),
+                            null,
+                            selected = current == Config.ACTION_TOGGLE_CONTROL_CENTER,
+                        ) { onPick(Config.ACTION_TOGGLE_CONTROL_CENTER) }
+                    }
+                    item {
+                        PickRow(
+                            stringResource(R.string.action_control_center),
+                            null,
+                            selected = current == Config.ACTION_CONTROL_CENTER,
+                        ) { onPick(Config.ACTION_CONTROL_CENTER) }
+                    }
+                    item {
+                        PickRow(
+                            stringResource(R.string.action_collapse_control_center),
+                            null,
+                            selected = current == Config.ACTION_COLLAPSE_CONTROL_CENTER,
+                        ) { onPick(Config.ACTION_COLLAPSE_CONTROL_CENTER) }
+                    }
+                    item {
+                        PickRow(
+                            stringResource(R.string.action_screenshot),
+                            null,
+                            selected = current == Config.ACTION_SCREENSHOT,
+                        ) { onPick(Config.ACTION_SCREENSHOT) }
                     }
                     items(apps, key = { it.pkg }) { a ->
                         PickRow(a.label, a.icon, selected = current == a.pkg) { onPick(a.pkg) }

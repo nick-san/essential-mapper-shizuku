@@ -17,6 +17,7 @@ slot in the app.
 ## Key Changes in this Fork
 
 - **No Accessibility Service (Bypass Payment App Blocks)**: Completely eliminates the dependency on Android's Accessibility Service. Many financial and payment apps (such as PayPay and various Japanese banking apps) block execution or show security warnings when Accessibility Services are enabled. By using [Shizuku](https://shizuku.rikka.app/) and running as a standard Foreground Service, this fork avoids those restrictions entirely.
+- **Built-in System Actions**: In addition to launching apps and toggling the flashlight, you can map keys to **Quick App Switch (Alt+Tab)**, **Recent Apps**, **Notification Shade (Toggle/Open/Collapse)**, **Control Center / Quick Settings (Toggle/Open/Collapse)**, and **Screenshot** directly via Shizuku.
 - **In-App Single Press Unlock**: Toggle the Nothing stock app suppression directly from the app UI via Shizuku without needing a PC or manual ADB commands.
 - **Independent Package**: Packaged as `com.aiden.essentialmapper.shizuku` so it can be installed alongside the original app.
 

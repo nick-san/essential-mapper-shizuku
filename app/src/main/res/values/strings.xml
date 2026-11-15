@@ -35,4 +35,13 @@
     <!-- Actions -->
     <string name="action_none">None</string>
     <string name="action_flashlight">Flashlight (toggle)</string>
+    <string name="action_alt_tab">Switch to previous app (Alt+Tab)</string>
+    <string name="action_recents">Recent apps (Overview)</string>
+    <string name="action_toggle_notifications">Toggle notification shade</string>
+    <string name="action_notifications">Open notification shade</string>
+    <string name="action_collapse_panel">Collapse notification shade</string>
+    <string name="action_toggle_control_center">Toggle control center (Quick Settings)</string>
+    <string name="action_control_center">Open control center (Quick Settings)</string>
+    <string name="action_collapse_control_center">Collapse control center</string>
+    <string name="action_screenshot">Take screenshot</string>
 </resources>

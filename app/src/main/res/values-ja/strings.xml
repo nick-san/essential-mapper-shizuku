@@ -35,4 +35,13 @@
     <!-- Actions -->
     <string name="action_none">なし</string>
     <string name="action_flashlight">ライト (ON/OFF切替)</string>
+    <string name="action_alt_tab">直前のアプリに切り替え (Alt+Tab)</string>
+    <string name="action_recents">最近使ったアプリ一覧</string>
+    <string name="action_toggle_notifications">通知パネルの開閉 (トグル)</string>
+    <string name="action_notifications">通知パネルを開く</string>
+    <string name="action_collapse_panel">通知パネルを閉じる</string>
+    <string name="action_toggle_control_center">コントロールセンターの開閉 (トグル)</string>
+    <string name="action_control_center">コントロールセンターを開く</string>
+    <string name="action_collapse_control_center">コントロールセンターを閉じる</string>
+    <string name="action_screenshot">スクリーンショット撮影</string>
 </resources>

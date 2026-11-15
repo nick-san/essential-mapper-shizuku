@@ -163,7 +163,72 @@ class EssentialKeyService : Service() {
         when (target) {
             null -> { /* unmapped slot */ }
             Config.ACTION_FLASHLIGHT -> toggleTorch()
+            Config.ACTION_ALT_TAB -> performAltTab()
+            Config.ACTION_RECENTS -> execShizuku(arrayOf("input", "keyevent", "187"))
+            Config.ACTION_TOGGLE_NOTIFICATIONS -> toggleNotifications()
+            Config.ACTION_NOTIFICATIONS -> execShizuku(arrayOf("cmd", "statusbar", "expand-notifications"))
+            Config.ACTION_COLLAPSE_PANEL -> execShizuku(arrayOf("cmd", "statusbar", "collapse"))
+            Config.ACTION_TOGGLE_CONTROL_CENTER -> toggleControlCenter()
+            Config.ACTION_CONTROL_CENTER -> execShizuku(arrayOf("cmd", "statusbar", "expand-settings"))
+            Config.ACTION_COLLAPSE_CONTROL_CENTER -> execShizuku(arrayOf("cmd", "statusbar", "collapse"))
+            Config.ACTION_SCREENSHOT -> execShizuku(arrayOf("input", "keyevent", "120"))
             else -> launchApp(target)
+        }
+    }
+
+    private fun execShizuku(cmd: Array<String>) {
+        serviceScope.launch(Dispatchers.IO) {
+            try {
+                val code = ShizukuUtil.exec(cmd)
+                Log.i(TAG, "execShizuku '${cmd.joinToString(" ")}' exited with code $code")
+            } catch (e: Exception) {
+                Log.e(TAG, "execShizuku failed for '${cmd.joinToString(" ")}': ${e.message}", e)
+            }
+        }
+    }
+
+    private fun performAltTab() {
+        serviceScope.launch(Dispatchers.IO) {
+            try {
+                val cmd = arrayOf("sh", "-c", "input keyevent 187 && input keyevent 187")
+                val code = ShizukuUtil.exec(cmd)
+                Log.i(TAG, "performAltTab exited with code $code")
+            } catch (e: Exception) {
+                Log.e(TAG, "performAltTab failed: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun isPanelExpanded(): Boolean {
+        return try {
+            val process = ShizukuUtil.spawnProcess(arrayOf("sh", "-c", "dumpsys window | grep -m 1 'mCurrentFocus='"))
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            val line = reader.readLine() ?: ""
+            process.waitFor()
+            line.contains("NotificationShade")
+        } catch (e: Exception) {
+            Log.w(TAG, "isPanelExpanded check failed: ${e.message}")
+            false
+        }
+    }
+
+    private fun toggleNotifications() {
+        serviceScope.launch(Dispatchers.IO) {
+            if (isPanelExpanded()) {
+                ShizukuUtil.exec(arrayOf("cmd", "statusbar", "collapse"))
+            } else {
+                ShizukuUtil.exec(arrayOf("cmd", "statusbar", "expand-notifications"))
+            }
+        }
+    }
+
+    private fun toggleControlCenter() {
+        serviceScope.launch(Dispatchers.IO) {
+            if (isPanelExpanded()) {
+                ShizukuUtil.exec(arrayOf("cmd", "statusbar", "collapse"))
+            } else {
+                ShizukuUtil.exec(arrayOf("cmd", "statusbar", "expand-settings"))
+            }
         }
     }
 

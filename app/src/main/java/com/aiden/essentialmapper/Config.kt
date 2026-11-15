@@ -42,10 +42,19 @@ private val Context.dataStore by preferencesDataStore(name = "config")
 
 object Config {
     /**
-     * Sentinel stored in a slot to mean "toggle the flashlight" rather than launch an
-     * app. Slots hold either a real package name or this token.
+     * Sentinels stored in a slot to mean built-in hardware/system actions rather than
+     * launching an app. Slots hold either a real package name or one of these tokens.
      */
     const val ACTION_FLASHLIGHT = "action:flashlight"
+    const val ACTION_ALT_TAB = "action:alt_tab"
+    const val ACTION_RECENTS = "action:recents"
+    const val ACTION_NOTIFICATIONS = "action:notifications"
+    const val ACTION_COLLAPSE_PANEL = "action:collapse_panel"
+    const val ACTION_TOGGLE_NOTIFICATIONS = "action:toggle_notifications"
+    const val ACTION_CONTROL_CENTER = "action:control_center"
+    const val ACTION_COLLAPSE_CONTROL_CENTER = "action:collapse_control_center"
+    const val ACTION_TOGGLE_CONTROL_CENTER = "action:toggle_control_center"
+    const val ACTION_SCREENSHOT = "action:screenshot"
 
     /** Seed the chosen mapping once, on first run, leaving later edits untouched. */
     suspend fun seedDefaultsIfEmpty(ctx: Context) {
